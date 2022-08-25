@@ -8,6 +8,9 @@ const productos = Router()
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 
+
+// PRODUCTOS
+
 const listaProductos = [{
     titulo:"Acondicionador",
     id:"1"
@@ -22,18 +25,11 @@ const listaProductos = [{
 }]
 
 
-app.use(express.json())
-app.use(express.urlencoded({extended:true}))
-
-
-
-
+// GET
 
 productos.get('/', (req, res) => {
     res.send(listaProductos)
 })
-
-
 
 
 productos.get('/:id', (req, res) => {
@@ -51,62 +47,59 @@ productos.get('/:id', (req, res) => {
 })
 
 
+// POST
 
+productos.post('/', (req, res, next) => {
 
-productos.post('/', (req, res) => {
+    const {titulo , precio} = req.body
 
-    const {titulo , id} = req.body
-
-    if(!titulo || !id){
+    if(!titulo || !precio){
         res.status(400).send('producto no encontrado')
     }
 
+    next()
 
 },(req, res) => {
 
-    listaProductos.push({titulo, id})
+    const {titulo , precio} = req.body
+
+    listaProductos.push({titulo, precio})
     
     res.send('producto guardado con exito')} 
 )
 
+// PUT
 
+productos.put('/:id', (req, res) => {
 
+        const { titulo, price } = req.body;
 
+        const index = listaProductos.filter(producto=>producto.id === Number(req.params.id))
 
-productos.put('/:id', async (req, res) => {
-    try{
-    const id = req.params.id
-
-    // const {titulo} = req.body
-
-    await db.User.update(
-        {titulo, id},
-        {
-            where: {
-                id,
-            },
+        if (index >= 0) {
+            listaProductos[index] = { titulo, price };
+            listaProductos[index].id = Number(req.params.id);
+            res.send(console.log(listaProductos[index]));
+        } else {
+            res.status(404).send({ error: 'Producto no encontrado' });
         }
-    );
-    res.status(200).send('Usuario actualizado');
-}catch(error){
-    res.status(400).send('No se pudo actualizar el producto')
-}
-});
+    });
 
 
-
+// DELETE
 
 productos.delete('/:id',(req, res) => {
     // Elimina un producto segun su id
     const id = req.params.id
     // filtrar los datos para identificar el objeto a eliminar y eliminarlo
     const productoBorrado = listaProductos.filter((elemento) => elemento.id !== id);
-    console.log(productoBorrado)
     if (productoBorrado.length == listaProductos.length) {
       console.log("No se encontro un item con dicho id para eliminar");
     } else {
-    // guardar el nuevo array con el nuevo objeto agregado
-    res.send("Elemento eliminado")
+        
+        listaProductos.splice( productoBorrado, 1) // Elimina el primer elemento el array
+        console.log(listaProductos)
+        res.send("Elemento eliminado")
   }
 })
 
